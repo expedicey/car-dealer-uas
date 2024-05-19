@@ -17,7 +17,7 @@ public class CarNode {
         this.price = price;
         this.mileage = mileage;
         this.vin = vin;
-        this.available = true; // assuming a new car is available by default
+        this.available = true; 
     }
 
     @Override

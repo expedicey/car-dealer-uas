@@ -1,7 +1,7 @@
 
 public class InquiryNode {
     String customerName;
-    String inquiryDetails; // (e.g., interested car model, questions)
+    String inquiryDetails; 
     InquiryNode next;
 
     public InquiryNode(String customerName, String inquiryDetails) {

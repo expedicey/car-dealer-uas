@@ -1,7 +1,7 @@
 public class SalesAction {
-    String actionType; // (e.g., "add_car", "apply_discount")
-    String carDetails; // (e.g., make, model, price)
-    double amount; // (e.g., discount amount)
+    String actionType; 
+    String carDetails; 
+    double amount; 
 
     public SalesAction(String actionType, String carDetails, double amount) {
         this.actionType = actionType;

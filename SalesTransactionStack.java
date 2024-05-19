@@ -1,25 +1,38 @@
-
 public class SalesTransactionStack {
     SalesActionNode top;
-    SalesActionNode undoTop;
-    SalesActionNode redoTop;
+    SalesActionNode undoStack; 
+    SalesActionNode redoStack; 
 
-    // Push a new action onto the stack
     public void pushAction(SalesActionNode action) {
         action.next = top;
         top = action;
-        pushUndo(action);
-        redoTop = null; // Clear the redo stack
+
+        if (redoStack == null) { 
+            pushUndo(action); 
+        }
+        redoStack = null; 
     }
 
     public void addTransaction(String customerName, String phone, String vin, double price) {
+        if (customerName == null || customerName.trim().isEmpty() ||
+            phone == null || phone.trim().isEmpty() ||
+            vin == null || vin.trim().isEmpty() || price <= 0) {
+            System.out.println("Invalid input for sales transaction. Please check your data.");
+            return;
+        }
+
         String carDetails = "Customer: " + customerName + ", Phone: " + phone + ", VIN: " + vin;
         SalesActionNode newTransaction = new SalesActionNode("add_car", carDetails, price);
-        pushAction(newTransaction); // Push the new transaction onto the stack
+        pushAction(newTransaction); 
         System.out.println("Sales transaction added to the stack.");
     }
 
     public void removeTransaction(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            System.out.println("Invalid input. Phone number cannot be empty.");
+            return;
+        }
+
         if (top == null) {
             System.out.println("No transactions in stack.");
             return;
@@ -29,20 +42,22 @@ public class SalesTransactionStack {
         SalesActionNode previous = null;
 
         while (current != null) {
-            if (current.carDetails.contains("Phone :" + phone)) {
+            if (current.carDetails.contains("Phone: " + phone)) { 
+                SalesActionNode removeAction = new SalesActionNode("remove_car", current.carDetails, current.amount);
+                pushAction(removeAction);
+
                 if (previous == null) {
                     top = current.next;
                 } else {
                     previous.next = current.next;
                 }
-                System.out.println("Transaction with phone number" + phone + "remove");
+                System.out.println("Transaction with phone number " + phone + " removed.");
                 return;
             }
             previous = current;
             current = current.next;
         }
-        System.out.println("Transaction with phone number" + phone + "not found in stack.");
-
+        System.out.println("Transaction with phone number " + phone + " not found in stack.");
     }
 
     public void displayAllTransactions() {
@@ -60,68 +75,67 @@ public class SalesTransactionStack {
     }
 
     private void pushUndo(SalesActionNode action) {
-        action.next = undoTop;
-        undoTop = action;
+        action.next = undoStack;
+        undoStack = action;
     }
 
-    // Pop an action from the undo stack
     private SalesActionNode popUndo() {
-        if (undoTop == null) {
-            return null; // Undo stack is empty
+        if (undoStack == null) {
+            return null; 
         }
-        SalesActionNode poppedAction = undoTop;
-        undoTop = undoTop.next;
+        SalesActionNode poppedAction = undoStack;
+        undoStack = undoStack.next;
         return poppedAction;
     }
 
     private void pushRedo(SalesActionNode action) {
-        action.next = redoTop;
-        redoTop = action;
+        action.next = redoStack;
+        redoStack = action;
     }
 
-    // Pop an action from the redo stack
     private SalesActionNode popRedo() {
-        if (redoTop == null) {
-            return null; // Redo stack is empty
+        if (redoStack == null) {
+            return null; 
         }
-        SalesActionNode poppedAction = redoTop;
-        redoTop = redoTop.next;
+        SalesActionNode poppedAction = redoStack;
+        redoStack = redoStack.next;
         return poppedAction;
     }
 
-
-    // Undo the last action
     public void undo() {
-        if (undoTop == null) {
+        if (undoStack == null) {
             System.out.println("Nothing to undo.");
             return;
         }
-
+    
         SalesActionNode lastAction = popUndo();
-        pushRedo(lastAction); // Add to redo stack
-
-        // Reverse the action 
+        pushRedo(lastAction);
+    
         if (lastAction.actionType.equals("add_car")) {
-            removeTransactionFromStack(lastAction.carDetails);
+            removeTransactionFromStack(lastAction.carDetails); 
             System.out.println("Undid adding car: " + lastAction.carDetails);
+    
         } else if (lastAction.actionType.equals("remove_car")) {
-            pushAction(new SalesActionNode("add_car", lastAction.carDetails, lastAction.amount)); 
+            lastAction.next = top;
+            top = lastAction;
             System.out.println("Undid removing car: " + lastAction.carDetails);
         }
     }
 
     public void redo() {
-        if (redoTop == null) {
+        if (redoStack == null) {
             System.out.println("Nothing to redo.");
             return;
         }
 
         SalesActionNode lastUndoneAction = popRedo();
-        pushUndo(lastUndoneAction);  // Add to undo stack
+        pushUndo(lastUndoneAction);
 
         if (lastUndoneAction.actionType.equals("add_car")) {
-            pushAction(lastUndoneAction); 
+            lastUndoneAction.next = top;
+            top = lastUndoneAction;
             System.out.println("Redid adding car: " + lastUndoneAction.carDetails);
+
         } else if (lastUndoneAction.actionType.equals("remove_car")) {
             removeTransactionFromStack(lastUndoneAction.carDetails);
             System.out.println("Redid removing car: " + lastUndoneAction.carDetails);
@@ -130,7 +144,7 @@ public class SalesTransactionStack {
 
     private void removeTransactionFromStack(String carDetails) {
         if (top == null) {
-            return; // Stack is empty
+            return;
         }
 
         SalesActionNode current = top;

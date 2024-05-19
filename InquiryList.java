@@ -1,27 +1,34 @@
 
 public class InquiryList {
     InquiryNode head;
+    private int currentInquiryIndex = 0;
 
-    // Add a new inquiry to the beginning of the list
     public void addInquiry(String customerName, String inquiryDetails) {
+        if (customerName == null || customerName.trim().isEmpty() || 
+            inquiryDetails == null || inquiryDetails.trim().isEmpty()) {
+            System.out.println("Invalid input. Customer name and Inquiry details cannot be empty.");
+            return;
+        }
+
         InquiryNode newInquiry = new InquiryNode(customerName, inquiryDetails);
         newInquiry.next = head;
         head = newInquiry;
     }
 
     public void removeInquiry(String customerName) {
+        if (customerName == null || customerName.trim().isEmpty()) {
+            System.out.println("Invalid input. Customer name cannot be empty.");
+            return;
+        }
+        
         InquiryNode current = head;
         InquiryNode previous = null;
 
-        // Iterate through the list to find the inquiry
         while (current != null) {
             if (current.customerName.equals(customerName)) {
-                // If the inquiry is found, remove it
                 if (previous == null) {
-                    // Removing the head node
                     head = current.next;
                 } else {
-                    // Removing a node in the middle or at the end
                     previous.next = current.next;
                 }
                 System.out.println("Inquiry from " + customerName + " removed.");
@@ -33,9 +40,6 @@ public class InquiryList {
         System.out.println("Inquiry from " + customerName + " not found.");
     }
 
-
-
-    // Process the first inquiry and remove it from the list
     public void processInquiry() {
         if (head == null) {
             System.out.println("No inquiries in the list.");
@@ -43,16 +47,65 @@ public class InquiryList {
         }
         System.out.println("Processing inquiry from: " + head.customerName);
         System.out.println("Inquiry details: " + head.inquiryDetails);
-        head = head.next; // Move to the next inquiry
+        head = head.next; 
     }
 
-    // Print the list of inquiries
     public void displayAllInquiries() {
         InquiryNode current = head;
+        int index = 0;
         while (current != null) {
-            System.out.println("Customer: " + current.customerName + 
-                               ", Inquiry: " + current.inquiryDetails);
+            System.out.print(index == currentInquiryIndex ? "--> " : "    ");
+            System.out.println("Customer: " + current.customerName + ", Inquiry: " + current.inquiryDetails);
             current = current.next;
+            index++;
         }
     }
+
+    public void displayCurrentInquiry() {
+        InquiryNode current = getNodeAtIndex(currentInquiryIndex);
+        if (current != null) {
+            System.out.println("\nCustomer: " + current.customerName + ", Inquiry: " + current.inquiryDetails);
+        } else {
+            System.out.println("No inquiry at this index.");
+        }
+    }
+
+    public void swipeInquiry(int direction) {
+        if (getInquiryCount() == 0) {
+            System.out.println("There are no cars to swipe.");
+            return; 
+        }
+        if (direction == 1) {
+            currentInquiryIndex = (currentInquiryIndex + 1) % getInquiryCount();
+        } else if (direction == 2) {
+            currentInquiryIndex = (currentInquiryIndex - 1 + getInquiryCount()) % getInquiryCount();
+        } else {
+            System.out.println("Invalid swipe direction. Use 1 for next, 2 for previous.");
+            return;
+        }
+        displayCurrentInquiry();
+    }
+
+    private InquiryNode getNodeAtIndex(int index) {
+        if (index < 0) {
+            return null;
+        }
+
+        InquiryNode current = head;
+        for (int i = 0; i < index && current != null; i++) {
+            current = current.next;
+        }
+        return current;
+    }
+
+    private int getInquiryCount() {
+        int count = 0;
+        InquiryNode current = head;
+        while (current != null) {
+            count++;
+            current = current.next;
+        }
+        return count;
+    }
+    
 }
