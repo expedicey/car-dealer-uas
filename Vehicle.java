@@ -17,6 +17,7 @@ public abstract class Vehicle {
     }
 
     public abstract void displayVehicleDetails();
+    public abstract double calculateDepreciation();
 
     public String getMake() {
         return this.make;
