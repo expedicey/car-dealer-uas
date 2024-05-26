@@ -16,14 +16,10 @@ public class SalesTransactionStack {
     public void pushAction(SalesActionNode action) {
         action.next = top;
         top = action;
-
-        // If the redo stack is empty, add the action to the undo stack.
-        if (redoStack == null) { 
-            pushUndo(action); 
-        }
         
-        // Clear the redo stack.
-        redoStack = null; 
+        // Push the action onto the undo stack and clear the redo stack
+        pushUndo(action);
+        redoStack = null;
     }
 
     /**
@@ -85,10 +81,11 @@ public class SalesTransactionStack {
         while (current != null) {
             if (current.carDetails.contains("Phone: " + phone)) { 
                 // Create a SalesActionNode for the remove action.
-                SalesActionNode removeAction = new SalesActionNode("remove_car", current.carDetails,
-                        current.amount);
-                // Push the remove action onto the stack.
-                pushAction(removeAction); 
+                SalesActionNode removeAction = new SalesActionNode("remove_car", current.carDetails, current.amount);
+                
+                // Push the remove action onto the undo stack and clear the redo stack
+                pushUndo(removeAction);
+                redoStack = null;
 
                 // Remove the transaction from the stack
                 if (previous == null) { 
@@ -116,8 +113,7 @@ public class SalesTransactionStack {
         SalesActionNode current = top;
         // Iterate through the stack and print details of each transaction
         while (current != null) {
-            System.out.println("Action: " + current.actionType + ", Details: " + current.carDetails
-                    + ", Amount: " + current.amount);
+            System.out.println("Action: " + current.actionType + ", Details: " + current.carDetails + ", Amount: " + current.amount);
             current = current.next;
         }
     }
@@ -128,8 +124,9 @@ public class SalesTransactionStack {
      * @param action The SalesActionNode to add to the undo stack.
      */
     private void pushUndo(SalesActionNode action) {
-        action.next = undoStack;
-        undoStack = action; 
+        SalesActionNode undoAction = new SalesActionNode(action.actionType, action.carDetails, action.amount);
+        undoAction.next = undoStack;
+        undoStack = undoAction; 
     }
 
     /**
@@ -152,8 +149,9 @@ public class SalesTransactionStack {
      * @param action The SalesActionNode to add to the redo stack.
      */
     private void pushRedo(SalesActionNode action) {
-        action.next = redoStack;
-        redoStack = action; 
+        SalesActionNode redoAction = new SalesActionNode(action.actionType, action.carDetails, action.amount);
+        redoAction.next = redoStack;
+        redoStack = redoAction; 
     }
 
     /**
@@ -188,8 +186,9 @@ public class SalesTransactionStack {
             removeTransactionFromStack(lastAction.carDetails); 
             System.out.println("Undid adding car: " + lastAction.carDetails);
         } else if (lastAction.actionType.equals("remove_car")) {
-            lastAction.next = top; 
-            top = lastAction; 
+            SalesActionNode restoreAction = new SalesActionNode("add_car", lastAction.carDetails, lastAction.amount);
+            restoreAction.next = top; 
+            top = restoreAction; 
             System.out.println("Undid removing car: " + lastAction.carDetails);
         }
     }
